@@ -1,1 +1,88 @@
 
+#include <SoftwareSerial.h>
+#include <DFRobotDFPlayerMini.h>
+
+// --- BLUETOOTH ---
+// Tu HC-06 está conectado aquí: TXD del Bluetooth al pin 2 del Nano
+SoftwareSerial miBluetooth(2, 3); 
+
+// --- SONIDO (DFPlayer Mini) ---
+// El MP3 sigue en sus pines de siempre (10 y 11)
+SoftwareSerial serialSonido(10, 11); 
+DFRobotDFPlayerMini myDFPlayer;
+
+// --- LUCES ---
+const int pinBlanca = 5;
+const int pinRoja = 6;
+bool estadoLuces = false;
+
+void setup() {
+  Serial.begin(115200); // Para el Monitor Serie del ordenador
+  
+  pinMode(pinBlanca, OUTPUT);
+  pinMode(pinRoja, OUTPUT);
+
+  // 1. Despertamos al módulo de sonido
+  serialSonido.listen(); 
+  serialSonido.begin(9600);
+  
+  Serial.println("Iniciando sistema...");
+  if (myDFPlayer.begin(serialSonido, false)) {
+    Serial.println("Sonido OK.");
+    myDFPlayer.volume(25); // Volumen al 25 (puedes subirlo hasta 30)
+  } else {
+    Serial.println("Fallo al iniciar el MP3 (Revisa la SD o los cables).");
+  }
+
+  // 2. Despertamos al Bluetooth
+  miBluetooth.begin(9600);
+  Serial.println("Bluetooth OK. Escuchando al móvil por el pin 2...");
+}
+
+void loop() {
+  // Le decimos al Nano que escuche permanentemente al Bluetooth
+  miBluetooth.listen();
+
+  // Si entra alguna orden volando por el aire desde el móvil...
+  if (miBluetooth.available()) {
+    char orden = miBluetooth.read();
+    
+    Serial.print("Orden recibida por Bluetooth: ");
+    Serial.println(orden);
+
+    // --- ACCIONES ---
+    
+    // H = Claxon (Pista 1)
+    if (orden == 'H' || orden == 'h') { 
+      Serial.println("Reproduciendo: Claxon");
+      myDFPlayer.play(1); 
+    }
+    // M = Motor (Pista 2)
+    else if (orden == 'M' || orden == 'm') { 
+      Serial.println("Reproduciendo: Sonido Motor");
+      myDFPlayer.play(2); 
+    }
+    // C = Canción 2 (Pista 3)
+    else if (orden == 'C' || orden == 'c') { 
+      Serial.println("Reproduciendo: Canción 2");
+      myDFPlayer.play(3); 
+    }
+    // R = Marcha Atrás (Pista 4)
+    else if (orden == 'R' || orden == 'r') { 
+      Serial.println("Reproduciendo: Marcha Atrás");
+      myDFPlayer.play(4); 
+    }
+    // P = Canción 1 (Pista 5)
+    else if (orden == 'P' || orden == 'p') { 
+      Serial.println("Reproduciendo: Canción 1");
+      myDFPlayer.play(5); 
+    }
+    // L = Luces
+    else if (orden == 'L' || orden == 'l') { 
+      estadoLuces = !estadoLuces;
+      digitalWrite(pinBlanca, estadoLuces ? HIGH : LOW);
+      digitalWrite(pinRoja, estadoLuces ? HIGH : LOW);
+      Serial.println("Luces alternadas");
+    }
+  }
+}
