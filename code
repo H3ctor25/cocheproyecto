@@ -9,8 +9,8 @@
 #include "esp_http_server.h"   // ESP32 HTTP server library, used to handle Web requests
 
 // Replace with your network credentials
-const char *ssid = "MIWIFI_kxEC";          // nombre wifi
-const char *password = "sKesKZGC";  // contraseña wifi
+const char *ssid = "xxxxx";          // nombre wifi
+const char *password = "xxxxxx";  // contraseña wifi
 
 //Set camera pins
 #define PWDN_GPIO_NUM 32
